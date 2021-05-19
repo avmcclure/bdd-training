@@ -1,17 +1,17 @@
 import { createStatement, Customer } from "./statement";
-import { Movie, MovieCode } from "./movie";
+import { ChildrensMovie, NewRelease, RegularMovie } from "./movie";
 import { Rental } from "./rental";
 
 it("should return expected statement", () => {
   const bob: Customer = {
-    name: "Bob",
+    name: "Bob"
   };
   const rentals: Rental[] = [
-    { movie: { code: MovieCode.Regular, title: "Pulp Fiction" }, daysRented: 2 },
-    { movie: { code: MovieCode.Children, title: "Lilo & Stitch" }, daysRented: 4 },
-    { movie: { code: MovieCode.Children, title: "Moana" }, daysRented: 2 },
-    { movie: { code: MovieCode.Regular, title: "Gladiator" }, daysRented: 6 },
-    { movie: { code: MovieCode.NewRelease, title: "Avengers" }, daysRented: 4 },
+    { movie: new RegularMovie("Pulp Fiction"), daysRented: 2 },
+    { movie: new ChildrensMovie("Lilo & Stitch"), daysRented: 4 },
+    { movie: new ChildrensMovie("Moana"), daysRented: 2 },
+    { movie: new RegularMovie("Gladiator"), daysRented: 6 },
+    { movie: new NewRelease("Avengers"), daysRented: 4 }
   ];
 
   var bobsStatement = createStatement(bob, rentals);

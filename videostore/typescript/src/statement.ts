@@ -1,47 +1,33 @@
-import { MovieCode } from "./movie";
 import { Rental } from "./rental";
 
 export type Customer = {
   name: string;
 };
 
+type Totals = { totalAmount: number; frequentRenterPoints: number; result: string };
+
 export function createStatement(customer: Customer, rentals: Rental[]): string {
-  let frequentRenterPoints = 0;
-  let totalAmount = 0;
-  let result = "Rental Record for " + customer.name + "\n";
-  for (const each of rentals) {
-    let thisAmount = 0;
+  const totals = sumMovieTotals(rentals)
+  return formatTotals(totals, customer);
+}
 
-    // determines the amount for each line
-    switch (each.movie.code) {
-      case MovieCode.Regular:
-        thisAmount += 2;
-        if (each.daysRented > 2) {
-          thisAmount = thisAmount + (each.daysRented - 2) * 1.5;
-        }
-        break;
-      case MovieCode.NewRelease:
-        thisAmount = thisAmount + each.daysRented * 3;
-        break;
-      case MovieCode.Children:
-        thisAmount += 1.5;
-        if (each.daysRented > 3) {
-          thisAmount = thisAmount + (each.daysRented - 3) * 1.5;
-        }
-        break;
-    }
+function sumMovieTotals(rentals: Rental[]): Totals {
+  return rentals.reduce<Totals>(
+    (acc, { daysRented, movie }) => {
+      const price = movie.calculateRentalPrice(daysRented);
+      return {
+        totalAmount: acc.totalAmount + price,
+        frequentRenterPoints: acc.frequentRenterPoints + movie.calculateRenterPoints(daysRented),
+        result: acc.result + `\t${movie.title}\t${price.toFixed(1)}\n`
+      };
+    },
+    { totalAmount: 0, frequentRenterPoints: 0, result: "" }
+  );
+}
 
-    frequentRenterPoints++;
-    if (each.movie.code == MovieCode.NewRelease && each.daysRented > 1) {
-      frequentRenterPoints++;
-    }
-
-    result += "\t" + each.movie.title + "\t" + thisAmount.toFixed(1) + "\n";
-    totalAmount += thisAmount;
-  }
-
-  result += "You owed " + totalAmount.toFixed(1) + "\n";
-  result += "You earned " + frequentRenterPoints + " frequent renter points \n";
-
-  return result;
+function formatTotals({ totalAmount, frequentRenterPoints, result }: Totals, customer: Customer) {
+  return `Rental Record for ${customer.name}
+${result}You owed ${totalAmount.toFixed(1)}
+You earned ${frequentRenterPoints} frequent renter points 
+`;
 }
